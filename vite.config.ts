@@ -25,12 +25,9 @@ const pathFixerPlugin = () => ({
   }
 });
 
-export default defineConfig(({ command }) => {
+export default defineConfig(() => {
   return {
-    // Если собираем билд для продакшена, ставим './', чтобы пути стали относительными.
-    // Если запускаем локальный дев-сервер (npm run dev), оставляем абсолютный корень '/'.
-    base: command === 'build' ? './' : '/', 
-    
+    base: '/', 
     plugins: [pathFixerPlugin(), react(), tailwindcss()],
     resolve: {
       alias: {
