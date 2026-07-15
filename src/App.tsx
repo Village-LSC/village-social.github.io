@@ -48,6 +48,20 @@ export default function App() {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
+  const [activeMobileId, setActiveMobileId] = useState<string | null>(null);
+
+  // Click outside listener to collapse active link description on mobile/tablet
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.clickable-link')) {
+        setActiveMobileId(null);
+        setHoveredIdx(null);
+      }
+    };
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, []);
 
   // Background Canvas Starfield with Gravity Fields
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -665,6 +679,16 @@ export default function App() {
                 <a
                   href={item.url}
                   onClick={(e) => {
+                    const isMobileOrTablet = window.innerWidth < 1024;
+                    if (isMobileOrTablet) {
+                      if (activeMobileId !== item.id) {
+                        e.preventDefault();
+                        setActiveMobileId(item.id);
+                        setHoveredIdx(idx);
+                        return;
+                      }
+                    }
+
                     if (item.id === 'discord') {
                       e.preventDefault();
                       navigator.clipboard.writeText('villagelsc_');
@@ -674,9 +698,17 @@ export default function App() {
                   }}
                   target={item.id !== 'discord' ? '_blank' : undefined}
                   rel="noopener noreferrer"
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  className={`clickable flex flex-col w-full rounded-2xl border ${item.color} font-mono text-xs sm:text-sm font-bold uppercase tracking-wider shadow-2xl transition-all duration-300 transform active:scale-98 cursor-pointer ${
+                  onMouseEnter={() => {
+                    if (window.innerWidth >= 1024) {
+                      setHoveredIdx(idx);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (window.innerWidth >= 1024) {
+                      setHoveredIdx(null);
+                    }
+                  }}
+                  className={`clickable-link clickable flex flex-col w-full rounded-2xl border ${item.color} font-mono text-xs sm:text-sm font-bold uppercase tracking-wider shadow-2xl transition-all duration-300 transform active:scale-98 cursor-pointer ${
                     isHovered ? `scale-[1.03] ${item.glowColor}` : 'scale-100'
                   } overflow-hidden backdrop-blur-md`}
                 >
